@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+
+{% block title %}Delivery Dashboard - FoodExpress{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <!-- Header -->
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <h2><i class="fa-solid fa-motorcycle text-danger me-2"></i>Delivery Partner Portal</h2>
+    </div>
+
+    <!-- Available for Pickup Section -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+            <h5 class="card-title text-warning fw-bold mb-3">
+                <i class="fa-solid fa-clock me-2"></i>Available for Pickup
+            </h5>
+
+            {% if available_orders %}
+                <div class="row g-3">
+                    {% for order in available_orders %}
+                        <div class="col-md-6">
+                            <div class="card border border-warning border-2 shadow-sm rounded-3 p-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h5 class="fw-bold mb-0">Order #{{ order.id }} - {{ order.restaurant.name }}</h5>
+                                    <span class="badge bg-warning text-dark">{{ order.status }}</span>
+                                </div>
+                                <p class="text-muted small mb-1">
+                                    <i class="fa-solid fa-location-dot me-1"></i>Deliver to: {{ order.delivery_address|default:"Standard Address" }}
+                                </p>
+                                <p class="fw-bold text-danger mb-3">Total Amount: ₹{{ order.total_amount }}</p>
+
+                                <div class="d-flex gap-2">
+                                    <!-- Accept Button -->
+                                    <form method="POST" action="{% url 'accept_delivery' order.id %}" class="flex-grow-1">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="accept">
+                                        <button type="submit" class="btn btn-success btn-sm w-100 fw-bold rounded-pill">
+                                            <i class="fa-solid fa-check me-1"></i>Accept
+                                        </button>
+                                    </form>
+
+                                    <!-- Reject Button -->
+                                    <form method="POST" action="{% url 'accept_delivery' order.id %}" class="flex-grow-1">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="reject">
+                                        <button type="submit" class="btn btn-outline-danger btn-sm w-100 fw-bold rounded-pill">
+                                            <i class="fa-solid fa-xmark me-1"></i>Decline
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-muted mb-0">No pending orders available for pickup right now.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Active Deliveries Section -->
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+            <h5 class="card-title text-primary fw-bold mb-3">
+                <i class="fa-solid fa-truck-fast me-2"></i>Active Deliveries (In Transit)
+            </h5>
+
+            {% if my_deliveries %}
+                <div class="row g-3">
+                    {% for order in my_deliveries %}
+                        <div class="col-md-6">
+                            <div class="card border border-primary border-2 shadow-sm rounded-3 p-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h5 class="fw-bold mb-0">Order #{{ order.id }} - {{ order.restaurant.name }}</h5>
+                                    <span class="badge bg-primary">Out for Delivery</span>
+                                </div>
+                                <p class="text-muted small mb-1">
+                                    <i class="fa-solid fa-location-dot me-1"></i>Deliver to: {{ order.delivery_address|default:"Standard Address" }}
+                                </p>
+                                <p class="fw-bold text-danger mb-3">Total Amount: ₹{{ order.total_amount }}</p>
+
+                                <!-- MARK DELIVERED FORM -->
+                                <form method="POST" action="{% url 'accept_delivery' order.id %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="delivered">
+                                    <button type="submit" class="btn btn-primary btn-sm w-100 fw-bold rounded-pill">
+                                        <i class="fa-solid fa-house-chimney-check me-1"></i>Mark as Delivered
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-muted mb-0">No active deliveries currently in transit.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

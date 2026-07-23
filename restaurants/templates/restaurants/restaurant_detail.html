@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block title %}{{ restaurant.name }} - FoodExpress{% endblock %}
+{% block content %}
+
+<!-- Restaurant Header -->
+<div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden">
+    <div class="bg-dark text-white p-4 p-md-5" style="background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('{% if restaurant.image %}{{ restaurant.image.url }}{% else %}https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1000{% endif %}') center/cover;">
+        <h1 class="fw-bold">{{ restaurant.name }}</h1>
+        <p class="mb-1"><i class="fa-solid fa-location-dot me-2"></i>{{ restaurant.address }}</p>
+        <p class="mb-0"><i class="fa-solid fa-phone me-2"></i>{{ restaurant.phone }}</p>
+    </div>
+</div>
+<!-- Category Filter Badges -->
+   <div class="mb-4 d-flex gap-2 flex-wrap">
+    <!-- ALL ITEMS BUTTON -->
+    <a href="{% url 'restaurant_detail' restaurant.id %}" 
+       class="btn btn-sm {% if not selected_category %}btn-danger{% else %}btn-outline-secondary{% endif %} rounded-pill px-3 fw-bold">
+        All Items
+    </a>
+
+    <!-- CATEGORY BUTTONS -->
+    {% for category in categories %}
+        <a href="{% url 'restaurant_detail' restaurant.id %}?category={{ category.id }}" 
+           class="btn btn-sm {% if selected_category == category.id %}btn-danger{% else %}btn-outline-secondary{% endif %} rounded-pill px-3 fw-bold">
+            {{ category.name }}
+        </a>
+    {% endfor %}
+</div>
+
+    <!-- Menu Items Grid -->
+    <h4 class="fw-bold mb-3">Menu Items</h4>
+<!-- Menu Items Grid -->
+<h4 class="fw-bold mb-3">Menu Items</h4>
+<div class="row g-3">
+    {% for item in food_items %}
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm rounded-4 p-3 d-flex flex-row align-items-center justify-content-between card-hover">
+            <div>
+                <div class="d-flex align-items-center gap-2">
+                    {% if item.is_veg %}
+                        <span class="badge bg-success">VEG</span>
+                    {% else %}
+                        <span class="badge bg-danger">NON-VEG</span>
+                    {% endif %}
+                    <h6 class="fw-bold mb-0">{{ item.name }}</h6>
+                </div>
+                <p class="text-muted small mb-1 mt-1">{{ item.description }}</p>
+                <h6 class="fw-bold text-danger mb-0">₹{{ item.price }}</h6>
+            </div>
+            <div class="text-end">
+                <a href="{% url 'add_to_cart' item.id %}" class="btn btn-sm btn-danger rounded-pill px-3 fw-bold">
+                    <i class="fa-solid fa-plus me-1"></i>Add
+                </a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <p class="text-muted">No menu items available right now.</p>
+    {% endfor %}
+</div>
+{% endblock %}

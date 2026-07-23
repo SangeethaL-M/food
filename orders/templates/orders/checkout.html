@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% block title %}Checkout - FoodExpress{% endblock %}
+
+{% block content %}
+<h3 class="fw-bold mb-4"><i class="fa-solid fa-credit-card text-danger me-2"></i>Checkout</h3>
+
+<div class="row g-4">
+    <!-- Left Column: Address & Payment Methods -->
+    <div class="col-md-7">
+        <form id="checkout-form" method="POST">
+            {% csrf_token %}
+            <div class="card border-0 shadow-sm rounded-4 p-4 mb-3">
+                <h5 class="fw-bold mb-3">Delivery Address</h5>
+                <textarea name="address" class="form-control" rows="3" required>{{ user_address }}</textarea>
+            </div>
+
+            <div class="card border-0 shadow-sm rounded-4 p-4">
+                <h5 class="fw-bold mb-3">Payment Method</h5>
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="radio" name="payment_method" value="COD" checked id="cod">
+                    <label class="form-check-label fw-semibold" for="cod"><i class="fa-solid fa-money-bill-wave text-success me-2"></i>Cash on Delivery (COD)</label>
+                </div>
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="radio" name="payment_method" value="Wallet" id="wallet">
+                    <label class="form-check-label fw-semibold" for="wallet"><i class="fa-solid fa-wallet text-primary me-2"></i>Wallet Balance (Balance: ₹{{ wallet_balance }})</label>
+                </div>
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="radio" name="payment_method" value="MobiKwik" id="mobikwik">
+                    <label class="form-check-label fw-semibold" for="mobikwik"><i class="fa-solid fa-mobile-screen text-warning me-2"></i>MobiKwik Wallet</label>
+                </div>
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="radio" name="payment_method" value="RazorPay" id="razorpay">
+                    <label class="form-check-label fw-semibold" for="razorpay"><i class="fa-solid fa-credit-card text-danger me-2"></i>RazorPay (Cards / UPI / NetBanking)</label>
+                </div>
+            </div>
+            
+            <button type="submit" name="place_order" id="submit-btn" class="btn btn-danger w-100 py-3 fw-bold mt-3 rounded-pill shadow-sm">Place Order</button>
+        </form>
+    </div>
+
+    <!-- Right Column: Order Summary & Coupon Input -->
+    <div class="col-md-5">
+        <div class="card border-0 shadow-sm rounded-4 p-4 mb-3">
+            <h5 class="fw-bold mb-3">Apply Coupon</h5>
+            <form method="POST" class="input-group">
+                {% csrf_token %}
+                <input type="text" name="coupon_code" class="form-control" placeholder="Enter Coupon Code" value="{{ applied_coupon|default:'' }}" required>
+                <button type="submit" name="apply_coupon" class="btn btn-outline-danger fw-bold">Apply</button>
+            </form>
+            {% if applied_coupon %}
+                <small class="text-success fw-bold mt-2 d-block"><i class="fa-solid fa-circle-check me-1"></i> Coupon '{{ applied_coupon }}' applied!</small>
+            {% endif %}
+        </div>
+
+        <div class="card border-0 shadow-sm rounded-4 p-4">
+            <h5 class="fw-bold mb-3">Order Summary</h5>
+            {% for item in cart_items %}
+                <div class="d-flex justify-content-between mb-2">
+                    <span>{{ item.food_item.name }} x {{ item.quantity }}</span>
+                    <span>₹{{ item.total_price }}</span>
+                </div>
+            {% endfor %}
+            <hr>
+            {% if discount > 0 %}
+                <div class="d-flex justify-content-between mb-2 text-muted">
+                    <span>Subtotal:</span>
+                    <span>₹{{ raw_total }}</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2 text-success fw-semibold">
+                    <span>Discount:</span>
+                    <span>-₹{{ discount }}</span>
+                </div>
+            {% endif %}
+            <div class="d-flex justify-content-between fw-bold fs-4">
+                <span>Total Amount:</span>
+                <span class="text-danger">₹{{ total_amount }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+    document.getElementById('checkout-form').onsubmit = function(e) {
+        var selectedMethod = document.querySelector('input[name="payment_method"]:checked').value;
+        
+        if (selectedMethod === 'MobiKwik') {
+            e.preventDefault();
+            var otp = prompt("MobiKwik Payment Verification\nEnter 6-digit OTP sent to your phone (Sample: 123456):");
+            if (otp !== null && otp.trim() !== "") {
+                alert("Payment Verified Successfully via MobiKwik!");
+                document.getElementById('checkout-form').submit();
+            } else {
+                alert("Payment cancelled.");
+            }
+        } else if (selectedMethod === 'RazorPay') {
+            e.preventDefault();
+            var options = {
+                "key": "{{ razorpay_key_id }}",
+                "amount": "{{ razorpay_amount }}",
+                "currency": "INR",
+                "name": "FoodExpress",
+                "description": "Food Order Payment",
+                "handler": function (response) {
+                    alert("RazorPay Payment Successful!");
+                    document.getElementById('checkout-form').submit();
+                },
+                "theme": { "color": "#ff4757" }
+            };
+            var rzp1 = new Razorpay(options);
+            rzp1.open();
+        }
+    };
+</script>
+{% endblock %}

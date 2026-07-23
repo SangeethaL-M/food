@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% block title %}Order Tracking #{{ order.id }} - FoodExpress{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="fw-bold mb-0">Live Order Tracking #{{ order.id }}</h4>
+            <span class="badge bg-danger fs-6 px-3 py-2">{{ order.status }}</span>
+        </div>
+
+        <!-- Progress Tracker Bar -->
+        <div class="position-relative m-4">
+            <div class="progress" style="height: 6px;">
+                <div class="progress-bar bg-danger" role="progressbar" 
+                    {% if order.status == 'Pending' %}
+                        <div class="progress-bar bg-danger" role="progressbar" style="width: 25%;"></div>
+                    {% elif order.status == 'Preparing' %}
+                        <div class="progress-bar bg-danger" role="progressbar" style="width: 50%;"></div>
+                    {% elif order.status == 'Out for Delivery' %}
+                        <div class="progress-bar bg-danger" role="progressbar" style="width: 75%;"></div>
+                    {% elif order.status == 'Delivered' %}
+                        <div class="progress-bar bg-danger" role="progressbar" style="width: 100%;"></div>
+                    {% else %}
+                        <div class="progress-bar bg-danger" role="progressbar" style="width: 0%;"></div>
+                    {% endif %}              
+                </div>
+            </div>
+            <div class="d-flex justify-content-between mt-3 text-center fw-semibold small">
+                <div class="{% if order.status == 'Pending' or order.status == 'Preparing' or order.status == 'Out for Delivery' or order.status == 'Delivered' %}text-danger{% else %}text-muted{% endif %}">
+                    <i class="fa-solid fa-receipt fa-2x d-block mb-1"></i>Placed
+                </div>
+                <div class="{% if order.status == 'Preparing' or order.status == 'Out for Delivery' or order.status == 'Delivered' %}text-danger{% else %}text-muted{% endif %}">
+                    <i class="fa-solid fa-fire-burner fa-2x d-block mb-1"></i>Preparing
+                </div>
+                <div class="{% if order.status == 'Out for Delivery' or order.status == 'Delivered' %}text-danger{% else %}text-muted{% endif %}">
+                    <i class="fa-solid fa-motorcycle fa-2x d-block mb-1"></i>Out for Delivery
+                </div>
+                <div class="{% if order.status == 'Delivered' %}text-success{% else %}text-muted{% endif %}">
+                    <i class="fa-solid fa-house-chimney-check fa-2x d-block mb-1"></i>Delivered
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Items & Summary -->
+    <div class="row g-4">
+        <div class="col-md-7">
+            <div class="card border-0 shadow-sm rounded-4 p-4">
+                <h5 class="fw-bold mb-3">Items Ordered</h5>
+                {% for item in order.items.all %}
+                <div class="d-flex justify-content-between border-bottom py-2">
+                    <span>{{ item.food_item.name }} x {{ item.quantity }}</span>
+                    <span class="fw-bold">₹{{ item.price }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="col-md-5">
+            <div class="card border-0 shadow-sm rounded-4 p-4">
+                <h5 class="fw-bold mb-3">Delivery Info</h5>
+                <p class="mb-1"><strong>Restaurant:</strong> {{ order.restaurant.name }}</p>
+                <p class="mb-1"><strong>Address:</strong> {{ order.delivery_address }}</p>
+                <p class="mb-3"><strong>Total Paid:</strong> <span class="text-danger fw-bold">₹{{ order.total_amount }}</span></p>
+                <a href="{% url 'home' %}" class="btn btn-outline-danger w-100 rounded-pill">Back to Restaurants</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

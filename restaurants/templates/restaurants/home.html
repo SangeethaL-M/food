@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% block title %}Home - FoodExpress{% endblock %}
+{% block content %}
+
+<!-- Hero Banner -->
+<div class="row align-items-center bg-white p-4 p-md-5 rounded-4 shadow-sm mb-4 hero-section">
+    <div class="col-md-7">
+        <h1 class="display-5 fw-bold text-dark">Craving something <span class="text-danger">Delicious?</span></h1>
+        <p class="text-muted fs-5">Order food from your favorite local restaurants delivered fast to your doorstep.</p>
+        <form method="GET" action="{% url 'home' %}" class="d-flex gap-2 mt-3">
+            <input type="text" name="q" class="form-control form-control-lg" placeholder="Search restaurant name..." value="{{ search_query }}">
+            <button class="btn btn-danger btn-lg px-4" type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
+        </form>
+    </div>
+    <div class="col-md-5 text-center">
+        <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&auto=format&fit=crop&q=80" class="img-fluid rounded-4 shadow animate-float hero-img" alt="Food Banner">
+    </div>
+</div>
+
+<!-- Categories Horizontal Filter -->
+{% if categories %}
+<div class="mb-4">
+    <h5 class="fw-bold mb-3">Explore Categories</h5>
+   <div class="d-flex gap-2 flex-wrap mb-4">
+    <!-- "All" button -->
+    <a href="{% url 'home' %}" 
+       class="btn btn-sm {% if not selected_category %}btn-danger{% else %}btn-outline-danger{% endif %} rounded-pill px-3 fw-bold">
+        All
+    </a>
+
+    <!-- Category Loop -->
+    {% for category in categories %}
+        <a href="{% url 'home' %}?category={{ category.id }}" 
+           class="btn btn-sm {% if selected_category == category.id or selected_category == category.name %}btn-danger{% else %}btn-outline-danger{% endif %} rounded-pill px-3 fw-bold">
+            {{ category.name }}
+        </a>
+    {% endfor %}
+</div>
+</div>
+{% endif %}
+
+<!-- Restaurants List -->
+<h4 class="fw-bold mb-3">Popular Restaurants</h4>
+<div class="row g-4">
+    {% for r in restaurants %}
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden card-hover">
+            {% if r.image %}
+                <img src="{{ r.image.url }}" class="card-img-top" style="height: 180px; object-fit: cover;" alt="{{ r.name }}">
+            {% else %}
+                <img src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&auto=format&fit=crop&q=80" class="card-img-top" style="height: 180px; object-fit: cover;" alt="Restaurant">
+            {% endif %}
+            <div class="card-body">
+                <h5 class="card-title fw-bold text-dark">{{ r.name }}</h5>
+                <p class="card-text text-muted small">{{ r.description|truncatewords:15 }}</p>
+                <div class="d-flex justify-content-between align-items-center">
+                    <small class="text-muted"><i class="fa-solid fa-location-dot me-1 text-danger"></i>{{ r.address|truncatewords:5 }}</small>
+                    <a href="{% url 'restaurant_detail' r.id %}" class="btn btn-sm btn-outline-danger fw-bold rounded-pill">View Menu</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12 text-center py-5">
+        <i class="fa-solid fa-utensils fa-3x text-muted mb-3"></i>
+        <h5>No restaurants found.</h5>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
